@@ -1,0 +1,14 @@
+newtype ReaderWriter env a = RW { getRW :: env -> (a, String) }
+
+
+instance Functor (ReaderWriter env) where
+    fmap f rw = RW $ \env ->
+        let (x, log) = getRW rw env
+        in (f x, log)
+
+instance Applicative (ReaderWriter env) where
+    pure = return
+    rwf <*> rwx = do
+        f <- rwf
+        x <- rwx
+        return (f x)

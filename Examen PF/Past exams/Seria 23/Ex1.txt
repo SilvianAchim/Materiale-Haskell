@@ -1,0 +1,28 @@
+data Expr = Var String | Val Int | Plus Expr Expr | Mult Expr Expr
+    deriving (Show, Eq)
+
+class Operations exp where
+    simplify :: exp -> exp
+
+instance Operations Expr where
+    simplify (Plus (Val 0) e) = simplify e
+    simplify (Plus e (Val 0)) = simplify e
+    simplify (Mult (Val 0) _) = Val 0
+    simplify (Mult _ (Val 0)) = Val 0
+    simplify (Mult (Val 1) e) = simplify e
+    simplify (Mult e (Val 1)) = simplify e
+    simplify (Plus e1 e2) = Plus (simplify e1) (simplify e2)
+    simplify (Mult e1 e2) = Mult (simplify e1) (simplify e2)
+    simplify e = e
+
+ex1 = Mult (Plus (Val 1) (Var "x")) (Val 1)
+ex2 = Plus ex1 (Val 3)
+ex3 = Plus (Mult (Val 0) (Val 2)) (Val 3)
+ex4 = Mult ex3 (Val 5)
+
+main :: IO ()
+main = do
+    print $ simplify ex1
+    print $ simplify ex2
+    print $ simplify ex3
+    print $ simplify ex4

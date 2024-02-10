@@ -1,0 +1,34 @@
+Fara Monade:
+
+import Data.Char (isUpper, isLower, toUpper, toLower, isAlphaNum)
+
+transformChar :: Char -> String
+transformChar c
+    | isUpper c = [toLower c]
+    | isLower c = [toUpper c]
+    | isDigit c = "*"
+    | otherwise = ""
+
+transformString :: String -> String
+transformString = concatMap transformChar
+
+Cu Monade:
+
+transformCharM :: Char -> [Char]
+transformCharM c = do
+    case c of
+        _ | isUpper c -> return $ toLower c
+        _ | isLower c -> return $ toUpper c
+        _ | isDigit c -> return '*'
+        _ -> []
+
+
+transformStringM :: String -> String
+transformStringM s = concatMap transformCharM s
+
+
+
+main :: IO ()
+main = do
+    putStrLn $ transformString "Ana,2"
+    putStrLn $ transformStringM "/.,"

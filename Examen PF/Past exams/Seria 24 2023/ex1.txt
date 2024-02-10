@@ -1,0 +1,24 @@
+data Prop = V String | T | F | Prop :&: Prop | Prop :|: Prop 
+    deriving (Show, Eq)
+
+class Operations exp where  
+    simplify :: exp -> exp
+
+instance Operations Prop where
+    simplify (F :&: _) = F
+    simplify (_ :&: F) = F
+    simplify (T :&: p) = simplify p
+    simplify (p :&: T) = simplify p
+    simplify (F :|: p) = simplify p
+    simplify (p :|: F) = simplify p
+    simplify (T :|: _) = T
+    simplify (_ :|: T) = T
+    simplify (p :&: q) = let sp = simplify p
+                             sq = simplify q
+                         in if sp == sq then sp
+                            else sp :&: sq
+    simplify (p :|: q) = let sp = simplify p
+                             sq = simplify q
+                         in if sp == sq then sp
+                            else sp :|: sq
+    simplify p = p  -- cazul de bază pentru V "string"

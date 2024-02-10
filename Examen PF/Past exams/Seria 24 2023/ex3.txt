@@ -1,0 +1,42 @@
+newtype WriterM a = MW { getMW :: (Maybe a, String) }
+
+instance Monad WriterM where
+    return x = MW (Just x, "")
+    MW (Nothing, log1) >>= _ = MW (Nothing, log1)
+    MW (Just x, log1) >>= f =
+        let MW (m', log2) = f x
+        in MW (m', log1 ++ log2)
+
+
+
+
+Pentru a defini o instanță a clasei Monad pentru tipul WriterM, trebuie să implementăm două funcții: return (sau pure, în contextul unei clase Applicative, dar vom ignora acest aspect deoarece ne concentrăm doar pe Monad) și >>= (bind). Scopul acestei monade este să combine rezultatele de tip Maybe a cu mesaje logate de tip String, permițând astfel efectuarea de calculuri care pot eșua, în timp ce se acumulează un log al acțiunilor efectuate.
+
+Mai întâi, definim tipul de date WriterM și apoi implementăm instanța Monad:
+
+haskell
+Copy code
+newtype WriterM a = MW { getMW :: (Maybe a, String) }
+
+instance Monad WriterM where
+    return x = MW (Just x, "")
+    MW (m, log1) >>= f =
+        let MW (m', log2) = f <$> m
+        in MW (m' >>= id, log1 ++ log2)
+În definiția lui >>=, folosim pattern matching pentru a desface WriterM în componentele sale, (m, log1). Aplicăm funcția f pe valoarea Maybe a din interiorul WriterM folosind operatorul <$>, care este echivalentul funcției fmap aplicat pe Maybe. Acest pas produce un nou WriterM, din care extragem rezultatul și logul intermediar (m', log2).
+
+În final, combinăm rezultatele posibile (m') și concatenăm logurile (log1 ++ log2). Notați că m' >>= id este necesar pentru a "aplana" rezultatul de la Maybe (Maybe a) la Maybe a, o operație care apare din aplicarea funcției f ce returnează un nou WriterM (și, implicit, un nou Maybe).
+
+Cu toate acestea, există o eroare în implementarea mea inițială. Am presupus greșit că putem utiliza fmap (<$>) direct pe m care este de tip Maybe a, dar avem nevoie de o abordare diferită pentru a aplica f care este o funcție de la a la WriterM b. Iată o corecție adecvată:
+
+haskell
+Copy code
+instance Monad WriterM where
+    return x = MW (Just x, "")
+    MW (Nothing, log1) >>= _ = MW (Nothing, log1)
+    MW (Just x, log1) >>= f =
+        let MW (m', log2) = f x
+        in MW (m', log1 ++ log2)
+În această corecție, tratăm separat cazul în care valoarea din WriterM este Nothing, propagând acest Nothing și logul existent. Când valoarea este Just x, aplicăm f pe x, obținând un nou WriterM cu un potențial nou rezultat și un nou log, pe care le combinăm cu logul anterior.
+
+Această implementare respectă acum cerințele unei monade pentru WriterM, permițând compunerea funcțiilor monadice într-un mod care gestionează atât calculul valorilor posibil nule (Maybe a), cât și acumularea logurilor asociate acestor calcule.

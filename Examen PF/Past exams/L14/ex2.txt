@@ -1,0 +1,24 @@
+Fara:
+
+getFromInterval :: Int -> Int -> [Int] -> [Int]
+getFromInterval low high xs = [x | x <- xs, x >= low, x <= high]
+
+
+getFromIntervalFilter :: Int -> Int -> [Int] -> [Int]
+getFromIntervalFilter low high xs = filter (\x -> x >= low && x <= high) xs
+
+
+CU:
+
+getFromIntervalM :: Int -> Int -> [Int] -> [Int]
+getFromIntervalM low high xs = do
+    x <- xs
+    if x >= low && x <= high then return x else []
+
+
+
+main :: IO ()
+main = do
+    print $ getFromInterval 5 7 [1..10]
+    print $ getFromIntervalFilter 5 7 [1..10]
+    print $ getFromIntervalM 5 7 [1..10]

@@ -1,0 +1,31 @@
+data Point = Pt [Int]
+    deriving Show
+
+data Arb = Empty | Node Int Arb Arb
+    deriving Show
+
+class ToFromArb a where
+    toArb :: a -> Arb
+    fromArb :: Arb -> a
+
+instance ToFromArb Point where
+    toArb (Pt xs) = foldr insert Empty xs
+        where
+            insert x Empty = Node x Empty Empty
+            insert x (Node y left right)
+                | x < y     = Node y (insert x left) right
+                | otherwise = Node y left (insert x right)
+
+    fromArb Empty = Pt []
+    fromArb arb = Pt (inOrder arb)
+        where
+            inOrder Empty = []
+            inOrder (Node x left right) = inOrder left ++ [x] ++ inOrder right
+
+
+main :: IO ()
+main = do
+    let point = Pt [5, 3, 7, 2, 9]
+    let arb = toArb point
+    print arb
+    print $ fromArb arb

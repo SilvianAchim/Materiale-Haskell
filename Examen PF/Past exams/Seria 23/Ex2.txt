@@ -1,0 +1,32 @@
+Fara Monad:
+
+import Data.Char (isAlpha, toLower)
+
+isConsonant :: Char -> Bool
+isConsonant c = isAlpha c && notElem (toLower c) ['a', 'e', 'i', 'o', 'u']
+
+transformChar :: Char -> String
+transformChar c
+    | isConsonant c = c : 'P' : [c]
+    | otherwise = [c]
+
+
+transformText :: String -> String
+transformText = concatMap transformChar
+
+
+Cu:
+
+transformTextM :: String -> String
+transformTextM s = concat [transformChar c | c <- s]
+
+transformTextMdo :: String -> String
+transformTextMdo s = do
+    c <- s
+    transformChar c
+
+main :: IO ()
+main = do
+    putStrLn $ transformText "Mi-e foame"
+    putStrLn $ transformTextM "Ana"
+    putStrLn $ transformTextMdo "Ana"
